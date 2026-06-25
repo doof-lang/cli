@@ -3,6 +3,11 @@
 `std/cli` parses `main(args: string[])` with a small schema and returns a
 flat `JsonValue` object that can be decoded with Doof JSON serialization.
 
+## Documentation
+
+- [Guide and API reference](docs/API.md) explains schema construction, argv parsing rules, JSON output, errors, and typed decoding.
+- Tests can be run with `doof test cli`.
+
 ## Usage
 
 ```doof

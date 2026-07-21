@@ -1,12 +1,12 @@
 class CliOptionSpec {
   readonly name: string
-  readonly short: string | null
+  readonly short: string | none
   readonly description: string
   readonly valueName: string
   readonly flag: bool
   readonly required: bool
   readonly defaultFlag: bool
-  readonly defaultValue: string | null
+  readonly defaultValue: string | none
   readonly multiple: bool
 }
 
@@ -20,7 +20,7 @@ class CliPositionalSpec {
 export class CliError {
   readonly kind: string
   readonly index: int
-  readonly name: string | null
+  readonly name: string | none
   readonly message: string
   readonly usage: string
 }
@@ -48,12 +48,12 @@ export class CliArgs {
     return value
   }
 
-  string(name: string): string | null {
+  string(name: string): string | none {
     raw := this.object().get(name) else {
-      return null
+      return none
     }
     value := raw as string else {
-      return null
+      return none
     }
     return value
   }
@@ -92,7 +92,7 @@ export class CliSpec {
 
   flag(
     name: string,
-    short: string | null = null,
+    short: string | none = none,
     description: string = "",
     defaultValue: bool = false,
   ): CliSpec {
@@ -104,7 +104,7 @@ export class CliSpec {
       flag: true,
       required: false,
       defaultFlag: defaultValue,
-      defaultValue: null,
+      defaultValue: none,
       multiple: false,
     })
     return this
@@ -112,11 +112,11 @@ export class CliSpec {
 
   option(
     name: string,
-    short: string | null = null,
+    short: string | none = none,
     valueName: string = "VALUE",
     description: string = "",
     required: bool = false,
-    defaultValue: string | null = null,
+    defaultValue: string | none = none,
     multiple: bool = false,
   ): CliSpec {
     this.options.push(CliOptionSpec {
@@ -164,7 +164,7 @@ export class CliSpec {
         values[option.name] = option.defaultFlag
       } else if option.multiple {
         values[option.name] = []
-      } else if option.defaultValue != null {
+      } else if option.defaultValue != none {
         values[option.name] = option.defaultValue!
       }
     }
@@ -248,7 +248,7 @@ export class CliSpec {
       text += "\nOptions:\n"
       for option of this.options {
         text += "  "
-        if option.short != null {
+        if option.short != none {
           text += "-" + option.short! + ", "
         } else {
           text += "    "
@@ -281,7 +281,7 @@ export class CliSpec {
     return text
   }
 
-  private validate(): Result<void, CliError> {
+  private validate(): Result<none, CliError> {
     optionNames: string[] := []
     shorts: string[] := []
     positionalNames: string[] := []
@@ -289,7 +289,7 @@ export class CliSpec {
     for index of 0..<this.options.length {
       option := this.options[index]
       if option.name.length == 0 {
-        return Failure { error: this.makeError("invalid-spec", index, null, "Option name cannot be empty") }
+        return Failure { error: this.makeError("invalid-spec", index, none, "Option name cannot be empty") }
       }
       if option.name == "_" {
         return Failure { error: this.makeError("invalid-spec", index, option.name, "Option name _ is reserved") }
@@ -299,7 +299,7 @@ export class CliSpec {
       }
       optionNames.push(option.name)
 
-      if option.short != null {
+      if option.short != none {
         short := option.short!
         if short.length != 1 {
           return Failure { error: this.makeError("invalid-spec", index, option.name, "Short option for --${option.name} must be one character") }
@@ -314,7 +314,7 @@ export class CliSpec {
     for index of 0..<this.positionals.length {
       positional := this.positionals[index]
       if positional.name.length == 0 {
-        return Failure { error: this.makeError("invalid-spec", index, null, "Positional name cannot be empty") }
+        return Failure { error: this.makeError("invalid-spec", index, none, "Positional name cannot be empty") }
       }
       if positional.name == "_" {
         return Failure { error: this.makeError("invalid-spec", index, positional.name, "Positional name _ is reserved") }
@@ -341,38 +341,38 @@ export class CliSpec {
     body := token.slice(2)
     separator := body.indexOf("=")
     let name = body
-    let inlineValue: string | null = null
+    let inlineValue: string | none = none
     if separator >= 0 {
       name = body.substring(0, separator)
       inlineValue = body.slice(separator + 1)
     }
 
     let negated = false
-    if inlineValue == null && name.startsWith("no-") {
+    if inlineValue == none && name.startsWith("no-") {
       maybeName := name.slice(3)
       negatedOption := this.optionByName(maybeName)
-      if negatedOption != null && negatedOption!.flag {
+      if negatedOption != none && negatedOption!.flag {
         name = maybeName
         negated = true
       }
     }
 
     foundOption := this.optionByName(name)
-    if foundOption == null {
+    if foundOption == none {
       return Failure { error: this.makeError("unknown-option", index, name, "Unknown option --${name}") }
     }
 
     if foundOption!.flag {
-      if inlineValue != null {
+      if inlineValue != none {
         return Failure { error: this.makeError("unexpected-value", index, name, "Flag --${name} does not take a value") }
       }
       values[name] = !negated
       return Success(index + 1)
     }
 
-    let optionValue: string | null = inlineValue
+    let optionValue: string | none = inlineValue
     let nextIndex = index + 1
-    if optionValue == null {
+    if optionValue == none {
       if nextIndex >= args.length {
         return Failure { error: this.makeError("missing-value", index, name, "Option --${name} requires a value") }
       }
@@ -399,7 +399,7 @@ export class CliSpec {
     while offset < body.length {
       short := body.substring(offset, offset + 1)
       foundOption := this.optionByShort(short)
-      if foundOption == null {
+      if foundOption == none {
         return Failure { error: this.makeError("unknown-option", index, short, "Unknown option -${short}") }
       }
 
@@ -436,7 +436,7 @@ export class CliSpec {
     values: Map<string, JsonValue>,
     seenOptions: string[],
     index: int,
-  ): Result<void, CliError> {
+  ): Result<none, CliError> {
     if option.multiple {
       raw := values.get(option.name) else {
         values[option.name] = [value]
@@ -507,25 +507,25 @@ export class CliSpec {
     return Success(extras)
   }
 
-  private optionByName(name: string): CliOptionSpec | null {
+  private optionByName(name: string): CliOptionSpec | none {
     for option of this.options {
       if option.name == name {
         return option
       }
     }
-    return null
+    return none
   }
 
-  private optionByShort(short: string): CliOptionSpec | null {
+  private optionByShort(short: string): CliOptionSpec | none {
     for option of this.options {
       if option.short == short {
         return option
       }
     }
-    return null
+    return none
   }
 
-  private makeError(kind: string, index: int, name: string | null, message: string): CliError {
+  private makeError(kind: string, index: int, name: string | none, message: string): CliError {
     return CliError {
       kind,
       index,

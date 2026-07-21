@@ -16,7 +16,7 @@ function parsedValue(spec: CliSpec, args: string[]): JsonValue {
     f: Failure -> {
       Assert.fail(f.error.message)
       panic(f.error.message)
-      yield null
+      yield none
     }
   }
 }
@@ -46,10 +46,10 @@ function failure(spec: CliSpec, args: string[]): string {
   }
 }
 
-export function testParsesLongOptionsFlagsDefaultsAndPositionals(): void {
+export function testParsesLongOptionsFlagsDefaultsAndPositionals() {
   spec := CliSpec.create("tool")
     .flag("verbose", "v")
-    .flag("color", null, "", true)
+    .flag("color", none, "", true)
     .option("output", "o", "PATH", "", false, "out.txt")
     .positional("input")
 
@@ -62,16 +62,16 @@ export function testParsesLongOptionsFlagsDefaultsAndPositionals(): void {
   Assert.equal(formatJsonValue(args.value), "{\"verbose\":true,\"color\":false,\"output\":\"build.txt\",\"input\":\"src.txt\",\"_\":[]}")
 }
 
-export function testParsesSpaceSeparatedLongOptionValueStartingWithDash(): void {
+export function testParsesSpaceSeparatedLongOptionValueStartingWithDash() {
   spec := CliSpec.create("tool").option("pattern")
   args := parsedArgs(spec, ["--pattern", "-value"])
 
   Assert.equal(args.string("pattern")!, "-value")
 }
 
-export function testParsesRepeatableOptionsAsArrays(): void {
+export function testParsesRepeatableOptionsAsArrays() {
   spec := CliSpec.create("tool")
-    .option("tag", "t", "TAG", "", false, null, true)
+    .option("tag", "t", "TAG", "", false, none, true)
 
   args := parsedArgs(spec, ["--tag", "doof", "-tstdlib", "-t", "cli"])
 
@@ -83,7 +83,7 @@ export function testParsesRepeatableOptionsAsArrays(): void {
   Assert.equal(formatJsonValue(args.value), "{\"tag\":[\"doof\",\"stdlib\",\"cli\"],\"_\":[]}")
 }
 
-export function testParsesShortFlagBundlesAndShortOptionValues(): void {
+export function testParsesShortFlagBundlesAndShortOptionValues() {
   spec := CliSpec.create("tool")
     .flag("all", "a")
     .flag("verbose", "v")
@@ -96,7 +96,7 @@ export function testParsesShortFlagBundlesAndShortOptionValues(): void {
   Assert.equal(args.string("output")!, "result.txt")
 }
 
-export function testDoubleDashAndSingleDashBecomePositionals(): void {
+export function testDoubleDashAndSingleDashBecomePositionals() {
   spec := CliSpec.create("tool")
     .flag("verbose", "v")
 
@@ -110,7 +110,7 @@ export function testDoubleDashAndSingleDashBecomePositionals(): void {
   Assert.equal(formatJsonValue(args.value), "{\"verbose\":false,\"_\":[\"-\",\"--verbose\",\"file\"]}")
 }
 
-export function testNamedAndMultiplePositionals(): void {
+export function testNamedAndMultiplePositionals() {
   spec := CliSpec.create("cp")
     .positional("source")
     .positional("destinations", "", true, true)
@@ -125,7 +125,7 @@ export function testNamedAndMultiplePositionals(): void {
   Assert.equal(formatJsonValue(args.value), "{\"source\":\"a.txt\",\"destinations\":[\"b.txt\",\"c.txt\"],\"_\":[]}")
 }
 
-export function testExtraPositionalsGoInUnderscore(): void {
+export function testExtraPositionalsGoInUnderscore() {
   spec := CliSpec.create("tool").positional("input", "", false)
   args := parsedArgs(spec, ["one", "two", "three"])
   extra := args.strings("_")
@@ -136,23 +136,23 @@ export function testExtraPositionalsGoInUnderscore(): void {
   Assert.equal(extra[1], "three")
 }
 
-export function testErrors(): void {
+export function testErrors() {
   Assert.equal(failure(CliSpec.create("tool").option("output"), ["--output"]), "missing-value")
   Assert.equal(failure(CliSpec.create("tool").option("output"), ["--output", "a", "--output", "b"]), "duplicate-option")
-  Assert.equal(failure(CliSpec.create("tool").option("output", null, "PATH", "", true), []), "missing-required")
+  Assert.equal(failure(CliSpec.create("tool").option("output", none, "PATH", "", true), []), "missing-required")
   Assert.equal(failure(CliSpec.create("tool").flag("verbose"), ["--missing"]), "unknown-option")
   Assert.equal(failure(CliSpec.create("tool").flag("verbose", "v"), ["-x"]), "unknown-option")
   Assert.equal(failure(CliSpec.create("tool").positional("input"), []), "missing-argument")
 }
 
-export function testInvalidSpecsReturnErrors(): void {
+export function testInvalidSpecsReturnErrors() {
   Assert.equal(failure(CliSpec.create("tool").flag(""), []), "invalid-spec")
   Assert.equal(failure(CliSpec.create("tool").flag("one", "x").option("two", "x"), []), "invalid-spec")
   Assert.equal(failure(CliSpec.create("tool").option("_"), []), "invalid-spec")
   Assert.equal(failure(CliSpec.create("tool").positional("many", "", true, true).positional("later"), []), "invalid-spec")
 }
 
-export function testUsageMentionsProgramOptionsAndArguments(): void {
+export function testUsageMentionsProgramOptionsAndArguments() {
   usage := CliSpec.create("tool", "Does work.")
     .flag("verbose", "v", "Print detail")
     .option("output", "o", "PATH", "Output file")
@@ -166,11 +166,11 @@ export function testUsageMentionsProgramOptionsAndArguments(): void {
   Assert.stringContains(usage, "input")
 }
 
-export function testJsonOutputDecodesWithSerdeLenientMode(): void {
+export function testJsonOutputDecodesWithSerdeLenientMode() {
   spec := CliSpec.create("tool")
     .flag("verbose")
     .option("count")
-    .option("output", null, "PATH", "", false, "default.txt")
+    .option("output", none, "PATH", "", false, "default.txt")
     .positional("input")
 
   value := parsedValue(spec, ["--verbose", "--count", "42", "in.txt"])

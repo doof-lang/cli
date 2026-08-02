@@ -73,7 +73,7 @@ export class CliArgs {
       }
       result.push(value)
     }
-    return result.buildReadonly()
+    return result.drainToReadonly()
   }
 }
 
@@ -215,7 +215,7 @@ export class CliSpec {
       value: CliArgs {
         value: values,
         objectValue: values,
-        positionals: collectedPositionals.buildReadonly(),
+        positionals: collectedPositionals.drainToReadonly(),
       }
     }
   }

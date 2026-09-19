@@ -26,11 +26,11 @@ export class CliError {
 }
 
 export class CliArgs {
-  readonly value: JsonValue
-  private objectValue: Map<string, JsonValue>
+  readonly value: SerialValue
+  private objectValue: Map<string, SerialValue>
   readonly positionals: readonly string[]
 
-  private object(): Map<string, JsonValue> {
+  private object(): Map<string, SerialValue> {
     return this.objectValue
   }
 
@@ -62,7 +62,7 @@ export class CliArgs {
     raw := this.object().get(name) else {
       return readonly []
     }
-    values := raw as readonly JsonValue[] else {
+    values := raw as readonly SerialValue[] else {
       return readonly []
     }
 
@@ -155,7 +155,7 @@ export class CliSpec {
       _: Success -> {}
     }
 
-    values: Map<string, JsonValue> := {}
+    values: Map<string, SerialValue> := {}
     seenOptions: string[] := []
     collectedPositionals: string[] := []
 
@@ -334,7 +334,7 @@ export class CliSpec {
   private parseLongOption(
     args: string[],
     index: int,
-    values: Map<string, JsonValue>,
+    values: Map<string, SerialValue>,
     seenOptions: string[],
   ): Result<int, CliError> {
     token := args[index]
@@ -389,7 +389,7 @@ export class CliSpec {
   private parseShortOptions(
     args: string[],
     index: int,
-    values: Map<string, JsonValue>,
+    values: Map<string, SerialValue>,
     seenOptions: string[],
   ): Result<int, CliError> {
     token := args[index]
@@ -433,7 +433,7 @@ export class CliSpec {
   private addOptionValue(
     option: CliOptionSpec,
     value: string,
-    values: Map<string, JsonValue>,
+    values: Map<string, SerialValue>,
     seenOptions: string[],
     index: int,
   ): Result<none, CliError> {
@@ -442,7 +442,7 @@ export class CliSpec {
         values[option.name] = [value]
         return Success()
       }
-      current := raw as JsonValue[] else {
+      current := raw as SerialValue[] else {
         return Failure { error: this.makeError("invalid-state", index, option.name, "Expected repeatable option storage for --${option.name}") }
       }
       current.push(value)
@@ -461,9 +461,9 @@ export class CliSpec {
 
   private assignPositionals(
     collected: string[],
-    values: Map<string, JsonValue>,
-  ): Result<JsonValue[], CliError> {
-    extras: JsonValue[] := []
+    values: Map<string, SerialValue>,
+  ): Result<SerialValue[], CliError> {
+    extras: SerialValue[] := []
 
     if this.positionals.length == 0 {
       for value of collected {
@@ -476,7 +476,7 @@ export class CliSpec {
     for specIndex of 0..<this.positionals.length {
       positional := this.positionals[specIndex]
       if positional.multiple {
-        items: JsonValue[] := []
+        items: SerialValue[] := []
         while collectedIndex < collected.length {
           items.push(collected[collectedIndex])
           collectedIndex += 1

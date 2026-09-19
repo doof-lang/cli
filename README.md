@@ -1,7 +1,7 @@
 # std/cli
 
 `std/cli` parses `main(args: string[])` with a small schema and returns a
-flat `JsonValue` object that can be decoded with Doof JSON serialization.
+flat `SerialValue` object that can be decoded with Doof JSON serialization.
 
 ## Documentation
 
@@ -33,7 +33,7 @@ function main(args: string[]): int {
     return 1
   }
 
-  options := Options.fromJsonValue(parsed.value, true) else error {
+  options := Options.fromSerialValue(parsed.value, true) else error {
     println("Invalid options: ${error}")
     return 1
   }
@@ -83,7 +83,7 @@ Render a compact usage string with options and positional arguments.
 
 ## JSON Output
 
-`CliArgs.value` is a flat `JsonObject`.
+`CliArgs.value` is a flat `SerialObject`.
 
 - Flags produce boolean fields.
 - Non-repeatable options produce string fields.
@@ -103,5 +103,5 @@ Render a compact usage string with options and positional arguments.
 ## Notes
 
 `std/cli` does not perform scalar conversion itself. Decode with
-`.fromJsonValue(parsed.value, true)` for string, boolean, and string-array
+`.fromSerialValue(parsed.value, true)` for string, boolean, and string-array
 configuration fields. Convert numeric fields in application code after parsing.

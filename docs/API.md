@@ -1,6 +1,6 @@
 # std/cli Guide
 
-`std/cli` turns `main(args: string[])` into a flat `JsonObject` using an
+`std/cli` turns `main(args: string[])` into a flat `SerialObject` using an
 application-defined schema. It deliberately stops at strings, booleans, and
 string arrays; decode the resulting JSON into an application type or perform
 numeric conversion in application code.
@@ -49,7 +49,7 @@ required values, and unassignable positionals return `CliError`.
 
 ## JSON Output
 
-`CliArgs.value` is a flat `JsonObject`:
+`CliArgs.value` is a flat `SerialObject`:
 
 - flags produce boolean fields
 - non-repeatable options produce string fields
@@ -86,7 +86,7 @@ export class CliArgs
 
 Fields and methods:
 
-- `value: JsonValue`
+- `value: SerialValue`
 - `positionals: readonly string[]`
 - `has(name: string): bool`
 - `flag(name: string): bool`

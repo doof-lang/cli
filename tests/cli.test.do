@@ -9,7 +9,7 @@ class DecodeOptions {
   readonly input: string
 }
 
-function parsedValue(spec: CliSpec, args: string[]): JsonValue {
+function parsedValue(spec: CliSpec, args: string[]): SerialValue {
   result := spec.parse(args)
   return case result {
     s: Success -> s.value.value,
@@ -174,7 +174,7 @@ export function testJsonOutputDecodesWithSerdeLenientMode() {
     .positional("input")
 
   value := parsedValue(spec, ["--verbose", "--count", "42", "in.txt"])
-  options := try! DecodeOptions.fromJsonValue(value, true)
+  options := try! DecodeOptions.fromSerialValue(value, true)
 
   Assert.isTrue(options.verbose)
   Assert.equal(options.count, "42")

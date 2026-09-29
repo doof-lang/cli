@@ -27,10 +27,10 @@ export class CliError {
 
 export class CliArgs {
   readonly value: SerialValue
-  private objectValue: Map<string, SerialValue>
+  private objectValue: readonly Map<string, SerialValue>
   readonly positionals: readonly string[]
 
-  private object(): Map<string, SerialValue> {
+  private object(): readonly Map<string, SerialValue> {
     return this.objectValue
   }
 
@@ -211,10 +211,11 @@ export class CliSpec {
     }
 
     values["_"] = assigned
+    parsed := values.drainToReadonly()
     return Success {
       value: CliArgs {
-        value: values,
-        objectValue: values,
+        value: parsed,
+        objectValue: parsed,
         positionals: collectedPositionals.drainToReadonly(),
       }
     }
@@ -439,14 +440,15 @@ export class CliSpec {
   ): Result<none, CliError> {
     if option.multiple {
       raw := values.get(option.name) else {
-        values[option.name] = [value]
+        values[option.name] = readonly [value]
         return Success()
       }
-      current := raw as SerialValue[] else {
+      stored := raw as readonly SerialValue[] else {
         return Failure { error: this.makeError("invalid-state", index, option.name, "Expected repeatable option storage for --${option.name}") }
       }
+      current := stored.cloneMutable()
       current.push(value)
-      values[option.name] = current
+      values[option.name] = current.drainToReadonly()
       return Success()
     }
 
@@ -462,14 +464,14 @@ export class CliSpec {
   private assignPositionals(
     collected: string[],
     values: Map<string, SerialValue>,
-  ): Result<SerialValue[], CliError> {
+  ): Result<readonly SerialValue[], CliError> {
     extras: SerialValue[] := []
 
     if this.positionals.length == 0 {
       for value of collected {
         extras.push(value)
       }
-      return Success(extras)
+      return Success(extras.drainToReadonly())
     }
 
     let collectedIndex = 0
@@ -484,8 +486,8 @@ export class CliSpec {
         if positional.required && items.length == 0 {
           return Failure { error: this.makeError("missing-argument", collectedIndex, positional.name, "Missing required argument ${positional.name}") }
         }
-        values[positional.name] = items
-        return Success(extras)
+        values[positional.name] = items.drainToReadonly()
+        return Success(extras.drainToReadonly())
       }
 
       if collectedIndex >= collected.length {
@@ -504,7 +506,7 @@ export class CliSpec {
       collectedIndex += 1
     }
 
-    return Success(extras)
+    return Success(extras.drainToReadonly())
   }
 
   private optionByName(name: string): CliOptionSpec | none {

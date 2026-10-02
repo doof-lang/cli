@@ -28,7 +28,7 @@ function parsedArgs(spec: CliSpec, args: string[]): CliArgs {
     f: Failure -> {
       Assert.fail(f.error.message)
       panic(f.error.message)
-      empty := try! CliSpec.create("empty").parse([])
+      empty := CliSpec.create("empty").parse([])!
       yield empty
     }
   }
@@ -174,7 +174,7 @@ export function testJsonOutputDecodesWithSerdeLenientMode() {
     .positional("input")
 
   value := parsedValue(spec, ["--verbose", "--count", "42", "in.txt"])
-  options := try! DecodeOptions.fromSerialValue(value, true)
+  options := DecodeOptions.fromSerialValue(value, true)!
 
   Assert.isTrue(options.verbose)
   Assert.equal(options.count, "42")
